@@ -11,17 +11,37 @@
     <script src="./jslib/jquery-2.1.4.min.js"></script>
     <script src="./jslib/jquery.dataTables.min.js"></script>
     <script src="./jslib/jstree.min.js"></script>
-    <script src="./jslib/pouchdb-5.1.0.js"></script>
-    <script src="./jslib/pouchdb.memory.js"></script>
 
+    <script type="text/javascript" src="qwebchannel.js"></script>
     <script src="dicomMetadictionary.js"></script>
 
     <script>
+      var channel;
       $(document).ready(function() {
+        var wsUri = "ws://localhost:12345";
+            var socket = new WebSocket(wsUri);
 
-        var db = new PouchDB('http://quantome.org:5984/chronicle');
-        document.db = db;
-
+            socket.onclose = function()
+            {
+                console.error("web channel closed");
+            };
+            socket.onerror = function(error)
+            {
+                console.error("web channel error: " + error);
+            };
+            socket.onopen = function()
+            {
+                window.channel = new QWebChannel(socket, function(channel) {
+                //connect to the changed signal of a property
+                window.channel.objects.dicomdb.studies(function(result) { 
+			 
+			console.log(result); 
+		        $('#studyTable').DataTable(result)
+		})
+			    
+                });
+            }
+/*      
         var seriesTable = null;
         var instanceTable = null;
 
@@ -250,6 +270,7 @@
             console.error(err);
           });
         };
+*/
       });
     </script>
 
